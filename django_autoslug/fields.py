@@ -6,7 +6,7 @@ from south.modelsinspector import add_introspection_rules
 
 
 def slugify(s):
-    if type(s) != 'unicode':
+    if hasattr(s, '__unicode__'):
         s = s.__unicode__()
     s = s.replace(u'\u0131', 'i')
     return django_slugify(s)
