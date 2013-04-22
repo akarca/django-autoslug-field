@@ -6,11 +6,14 @@ from south.modelsinspector import add_introspection_rules
 
 
 def slugify(s):
+    if type(s) != 'unicode':
+        s = s.__unicode__()
     s = s.replace(u'\u0131', 'i')
     return django_slugify(s)
 
 
 class AutoSlugField(SlugField):
+
     """ AutoSlugField
 
     By default, sets editable=False, blank=True.
@@ -30,10 +33,10 @@ class AutoSlugField(SlugField):
 
     recursive
         If set, track callable/field recursively and prepend to slug
-    
+
     use_recursive_slug
         If set, when recursive is enabled it will prepend only slug from first recursive item
-    
+
     prefix_from
         If set, prepend to slug
 
@@ -74,12 +77,6 @@ class AutoSlugField(SlugField):
         return re.sub(r'^%s+|%s+$' % (re_sep, re_sep), '', value)
 
     def slugify_func(self, content):
-        try:
-            from pytils.translit import translify
-            content = translify(content)
-        except:
-            pass
-
         return slugify(content)
 
     def get_recursive_model(self, current_model):

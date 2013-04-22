@@ -1,5 +1,5 @@
-Django==1.2.3
-South==0.7.2
+Django
+South
 
 # also add django-autoslug-field
 # with 'python setup.py develop'
