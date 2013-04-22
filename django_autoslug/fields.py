@@ -1,8 +1,14 @@
 import re
 import datetime
-from django.template.defaultfilters import slugify
+from django.template.defaultfilters import slugify as django_slugify
 from django.db.models import SlugField, SubfieldBase
 from south.modelsinspector import add_introspection_rules
+
+
+def slugify(s):
+    s = s.replace(u'\u0131', 'i')
+    return django_slugify(s)
+
 
 class AutoSlugField(SlugField):
     """ AutoSlugField
