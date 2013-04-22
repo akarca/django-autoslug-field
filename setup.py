@@ -9,7 +9,7 @@ setup(
     long_description=open('README.rst').read(),
     author='Serdar Akarca',
     author_email='serdar@yuix.org',
-    url='http://github.com/serdarakarca/django-categories',
+    url='http://github.com/serdarakarca/django-autoslug-field',
     packages=find_packages(),
     include_package_data=True,
     license="MIT License",
