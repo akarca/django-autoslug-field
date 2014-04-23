@@ -8,6 +8,8 @@ from south.modelsinspector import add_introspection_rules
 def slugify(s):
     if hasattr(s, '__unicode__'):
         s = s.__unicode__()
+    else:
+	s = str(s)
     s = s.replace(u'\u0131', 'i')
     return django_slugify(s)
 
