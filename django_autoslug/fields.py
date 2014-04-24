@@ -1,50 +1,21 @@
 import re
-import datetime
+import types
+
 from django.template.defaultfilters import slugify as django_slugify
 from django.db.models import SlugField, SubfieldBase
 from south.modelsinspector import add_introspection_rules
 
 
-def slugify(s):
-    if hasattr(s, '__unicode__'):
-        s = s.__unicode__()
-    else:
-	s = str(s)
-    s = s.replace(u'\u0131', 'i')
-    return django_slugify(s)
+def slugify(value):
+    if hasattr(value, '__unicode__'):
+        value = value.__unicode__()
+    if not isinstance(value, types.UnicodeType):
+        value = unicode(value)
+    value = value.replace(u'\u0131', 'i')
+    return django_slugify(value)
 
 
 class AutoSlugField(SlugField):
-
-    """ AutoSlugField
-
-    By default, sets editable=False, blank=True.
-
-    Required arguments:
-
-    populate_from
-        Specifies which field or list of fields the slug is populated from.
-
-    Optional arguments:
-
-    separator
-        Defines the used separator (default: '-')
-
-    overwrite
-        If set to True, overwrites the slug on every save (default: False)
-
-    recursive
-        If set, track callable/field recursively and prepend to slug
-
-    use_recursive_slug
-        If set, when recursive is enabled it will prepend only slug from first recursive item
-
-    prefix_from
-        If set, prepend to slug
-
-    Based on django-extensions, inspired by SmileyChris' Unique Slugify snippet:
-    http://www.djangosnippets.org/snippets/690/
-    """
 
     __metaclass__ = SubfieldBase
 
@@ -58,8 +29,8 @@ class AutoSlugField(SlugField):
             raise ValueError("missing 'populate_from' argument")
         else:
             self._populate_from = populate_from
-        self.field_separator = kwargs.pop('field_separator',  u'/')
-        self.separator = kwargs.pop('separator',  u'-')
+        self.field_separator = kwargs.pop('field_separator', u'/')
+        self.separator = kwargs.pop('separator', u'-')
         self.overwrite = kwargs.pop('overwrite', False)
         self.recursive = kwargs.pop('recursive', False)
         self.use_recursive_slug = kwargs.pop('use_recursive_slug', False)
@@ -96,24 +67,29 @@ class AutoSlugField(SlugField):
                 L = []
                 tmp = model_instance
                 while tmp:
-                    slug_for_field = lambda field: self.slugify_func(getattr(tmp, field))
-                    L.append(self.separator.join(map(slug_for_field, self._populate_from)))
+                    slug_for_field = lambda field: self.slugify_func(
+                        getattr(tmp, field))
+                    L.append(self.separator.join(
+                        map(slug_for_field, self._populate_from)))
                     tmp = getattr(tmp, self.recursive)
                     if callable(tmp):
                         tmp = tmp()
 
-                    if self.use_recursive_slug and tmp != None:
+                    if self.use_recursive_slug and tmp is not None:
                         L.append(getattr(tmp, 'slug'))
                         break
 
                 L.reverse()
                 slug = self.field_separator.join(L)
             else:
-                slug_for_field = lambda field: self.slugify_func(getattr(model_instance, field))
-                slug = self.separator.join(map(slug_for_field, self._populate_from))
+                slug_for_field = lambda field: self.slugify_func(
+                    getattr(model_instance, field))
+                slug = self.separator.join(
+                    map(slug_for_field, self._populate_from))
 
             if self.prefix_from:
-                prefix = self.slugify_func(getattr(model_instance, self.prefix_from[0]))
+                prefix = self.slugify_func(
+                    getattr(model_instance, self.prefix_from[0]))
                 slug = "%s%s%s" % (prefix, self.field_separator, slug)
 
             next = 2
@@ -156,8 +132,8 @@ class AutoSlugField(SlugField):
             slug = original_slug
             end = '%s%s' % (self.separator, next)
             end_len = len(end)
-            if slug_len and len(slug)+end_len > slug_len:
-                slug = slug[:slug_len-end_len]
+            if slug_len and len(slug) + end_len > slug_len:
+                slug = slug[:slug_len - end_len]
                 slug = self._slug_strip(slug)
             slug = '%s%s' % (slug, end)
             kwargs[self.attname] = slug
@@ -176,7 +152,8 @@ add_introspection_rules(
     [(
         [AutoSlugField],
         [],
-        {'populate_from': ["_populate_from", {}], 'recursive': ["recursive", {}]}
+        {'populate_from': ["_populate_from", {}],
+         'recursive': ["recursive", {}]}
     )],
     ["^django_autoslug\.fields\.AutoSlugField"]
 )
